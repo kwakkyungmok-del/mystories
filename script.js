@@ -120,6 +120,19 @@ document.getElementById("tax-rate").addEventListener("change", (e) => {
 
 // ===== 자원 계산 =====
 function calculateResources() {
+    let capacity = 0;
+mapData.forEach(type => {
+    if (!type) return;
+    const b = buildings[type];
+    if (b.capacity) capacity += b.capacity;
+    if (b.food) food += b.food;
+    if (b.power) power += b.power;
+    if (b.income) income += b.income;
+    if (b.upkeep) upkeep += b.upkeep;
+    if (b.happiness) happiness += b.happiness;
+    if (b.taxBoost) taxBoost += b.taxBoost;
+});
+
     population = 0;
     food = 0;
     power = 0;
