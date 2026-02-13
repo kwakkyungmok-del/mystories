@@ -120,71 +120,63 @@ document.getElementById("tax-rate").addEventListener("change", (e) => {
 
 // ===== 자원 계산 =====
 function calculateResources() {
-    let capacity = 0;
-mapData.forEach(type => {
-    if (!type) return;
-    const b = buildings[type];
-    if (b.capacity) capacity += b.capacity;
-    if (b.food) food += b.food;
-    if (b.power) power += b.power;
-    if (b.income) income += b.income;
-    if (b.upkeep) upkeep += b.upkeep;
-    if (b.happiness) happiness += b.happiness;
-    if (b.taxBoost) taxBoost += b.taxBoost;
-});
 
-    population = 0;
-    food = 0;
-    power = 0;
+    // ===== 모든 기본 변수 선언 =====
+    let capacity = 0;
+    let population = 0;
+    let food = 0;
+    let power = 0;
     let income = 0;
     let upkeep = 0;
     let taxBoost = 0;
+    let happinessChange = 0; // 건물 행복 효과 따로 저장
 
+    // ===== 맵 순회 =====
     mapData.forEach(type => {
         if (!type) return;
 
         const b = buildings[type];
 
-        if (b.capacity) population += b.capacity;
+        if (b.capacity) capacity += b.capacity;
         if (b.food) food += b.food;
         if (b.power) power += b.power;
         if (b.income) income += b.income;
         if (b.upkeep) upkeep += b.upkeep;
-        if (b.happiness) happiness += b.happiness;
+        if (b.happiness) happinessChange += b.happiness;
         if (b.taxBoost) taxBoost += b.taxBoost;
     });
 
-    let taxIncome = population * taxRate * (1 + taxBoost);
+    // ===== 행복도 계산 =====
+    happiness += happinessChange;
 
-    money += income + taxIncome - upkeep;
-
-    // 세율 높으면 행복도 감소
     if (taxRate === 6) happiness -= 2;
     if (taxRate === 1) happiness += 1;
 
-    // 자원 부족 패널티
     if (food < population) happiness -= 3;
     if (power < population) happiness -= 2;
 
-    // 최소/최대 제한
     happiness = Math.max(0, Math.min(100, happiness));
-// ===== 인구 증감 시스템 =====
-if (happiness >= 20) {
-    if (realPopulation < capacity) {
-        realPopulation += Math.ceil(capacity * 0.05); // 5% 증가
+
+    // ===== 인구 증감 =====
+    if (happiness >= 20) {
+        if (realPopulation < capacity) {
+            realPopulation += Math.ceil(capacity * 0.05);
+        }
+    } else {
+        realPopulation -= Math.ceil(realPopulation * 0.1);
     }
-} else {
-    realPopulation -= Math.ceil(realPopulation * 0.1); // 10% 감소
-}
 
-// 범위 제한
-realPopulation = Math.max(0, Math.min(capacity, realPopulation));
+    realPopulation = Math.max(0, Math.min(capacity, realPopulation));
+    population = realPopulation;
 
-// 실제 인구를 표시용 population에 반영
-population = realPopulation;
+    // ===== 세금/수익 =====
+    let taxIncome = population * taxRate * (1 + taxBoost);
+    money += income + taxIncome - upkeep;
 
+    // ===== UI 업데이트 =====
     updateStats();
 }
+
 
 // ===== UI 업데이트 =====
 function updateStats() {
