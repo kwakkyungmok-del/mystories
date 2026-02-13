@@ -1,1 +1,24 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>격리 도시 시뮬</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <h1>격리 도시 시뮬</h1>
+
+    <div id="ui">
+        <p>시민 수: <span id="citizenCount">0</span></p>
+        <p>감염자 수: <span id="infectedCount">0</span></p>
+        <button onclick="deploySoldiers()">군 투입</button>
+        <button onclick="resetGame()">초기화</button>
+    </div>
+
+    <canvas id="gameCanvas" width="800" height="500"></canvas>
+
+    <script src="script.js"></script>
+</body>
+</html>
 
