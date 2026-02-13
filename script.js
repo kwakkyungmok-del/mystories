@@ -1,5 +1,6 @@
 // ===== 기본 자원 =====
 let population = 0;
+let realPopulation = 0;
 let money = 500;
 let happiness = 50;
 let food = 50;
