@@ -155,6 +155,20 @@ function calculateResources() {
 
     // 최소/최대 제한
     happiness = Math.max(0, Math.min(100, happiness));
+// ===== 인구 증감 시스템 =====
+if (happiness >= 20) {
+    if (realPopulation < capacity) {
+        realPopulation += Math.ceil(capacity * 0.05); // 5% 증가
+    }
+} else {
+    realPopulation -= Math.ceil(realPopulation * 0.1); // 10% 감소
+}
+
+// 범위 제한
+realPopulation = Math.max(0, Math.min(capacity, realPopulation));
+
+// 실제 인구를 표시용 population에 반영
+population = realPopulation;
 
     updateStats();
 }
