@@ -1,101 +1,152 @@
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
+// ===== 기본 자원 =====
+let population = 0;
+let money = 500;
+let happiness = 50;
+let food = 50;
+let power = 50;
 
-let citizens = [];
-let infected = [];
-let soldiers = [];
+let taxRate = 3;
+let selectedBuilding = null;
+let cityHallBuilt = false;
 
-const citizenImg = new Image();
-citizenImg.src = "assets/soldier.png"; // 지금은 테스트용 (이미지 하나만 있어도 됨)
+// ===== 건물 데이터 =====
+const buildings = {
+    house: { icon: "🏠", cost: 50, capacity: 5, upkeep: 2 },
+    apartment: { icon: "🏢", cost: 200, capacity: 20, upkeep: 8, happiness: -2 },
+    farm: { icon: "🌾", cost: 120, food: 15 },
+    shop: { icon: "🏬", cost: 150, income: 20, happiness: 2 },
+    factory: { icon: "🏭", cost: 250, income: 40, happiness: -5 },
+    powerplant: { icon: "⚡", cost: 300, power: 50, happiness: -3 },
+    park: { icon: "🌳", cost: 100, happiness: 6, upkeep: 3 },
+    hospital: { icon: "🏥", cost: 220, happiness: 5, upkeep: 10 },
+    school: { icon: "🏫", cost: 200, happiness: 3, upkeep: 8 },
+    police: { icon: "🚓", cost: 180, happiness: 2, upkeep: 6 },
+    bank: { icon: "🏦", cost: 300, taxBoost: 0.15 },
+    cityhall: { icon: "🏛", cost: 500, taxBoost: 0.10 }
+};
 
-const infectedImg = new Image();
-infectedImg.src = "assets/soldier.png";
+// ===== 맵 생성 =====
+const mapElement = document.getElementById("map");
+let mapData = [];
 
-const soldierImg = new Image();
-soldierImg.src = "assets/soldier.png";
+function createMap() {
+    for (let i = 0; i < 100; i++) {
+        const cell = document.createElement("div");
+        cell.classList.add("cell");
+        cell.dataset.index = i;
+        cell.addEventListener("click", handleCellClick);
 
-const width = canvas.width;
-const height = canvas.height;
-
-function randomPos() {
-    return {
-        x: Math.random() * (width - 30),
-        y: Math.random() * (height - 30)
-    };
-}
-
-function createCitizens(count) {
-    citizens = [];
-    for (let i = 0; i < count; i++) {
-        let pos = randomPos();
-        citizens.push({ x: pos.x, y: pos.y });
+        mapElement.appendChild(cell);
+        mapData.push(null);
     }
 }
 
-function createInfected(count) {
-    infected = [];
-    for (let i = 0; i < count; i++) {
-        let pos = randomPos();
-        infected.push({ x: pos.x, y: pos.y });
+// ===== 클릭 처리 =====
+function handleCellClick(e) {
+    const index = e.target.dataset.index;
+
+    if (!selectedBuilding) return;
+
+    if (selectedBuilding === "bulldoze") {
+        if (mapData[index]) {
+            money += 20; // 일부 환급
+            mapData[index] = null;
+            e.target.textContent = "";
+            updateStats();
+        }
+        return;
     }
-}
 
-function draw() {
-    ctx.clearRect(0, 0, width, height);
+    const building = buildings[selectedBuilding];
 
-    citizens.forEach(c => {
-        ctx.drawImage(citizenImg, c.x, c.y, 25, 25);
-    });
+    if (!building) return;
+    if (money < building.cost) return alert("자금 부족");
 
-    infected.forEach(i => {
-        ctx.drawImage(infectedImg, i.x, i.y, 25, 25);
-    });
-
-    soldiers.forEach(s => {
-        ctx.drawImage(soldierImg, s.x, s.y, 30, 30);
-    });
-}
-
-function distance(a, b) {
-    return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
-}
-
-function infectionStep() {
-    citizens.forEach((c, ci) => {
-        infected.forEach(i => {
-            if (distance(c, i) < 40) {
-                if (Math.random() < 0.2) {
-                    infected.push(c);
-                    citizens.splice(ci, 1);
-                }
-            }
-        });
-    });
-
-    document.getElementById("citizenCount").textContent = citizens.length;
-    document.getElementById("infectedCount").textContent = infected.length;
-}
-
-function deploySoldiers() {
-    for (let i = 0; i < 3; i++) {
-        let pos = randomPos();
-        soldiers.push({ x: pos.x, y: pos.y });
+    if (selectedBuilding === "cityhall" && cityHallBuilt) {
+        return alert("시청은 하나만 건설 가능");
     }
+
+    if (mapData[index]) return;
+
+    money -= building.cost;
+    mapData[index] = selectedBuilding;
+    e.target.textContent = building.icon;
+
+    if (selectedBuilding === "cityhall") {
+        cityHallBuilt = true;
+    }
+
+    updateStats();
 }
 
-function resetGame() {
-    soldiers = [];
-    createCitizens(15);
-    createInfected(1);
+// ===== 버튼 선택 =====
+document.querySelectorAll("#build-menu button").forEach(btn => {
+    btn.addEventListener("click", () => {
+        selectedBuilding = btn.dataset.building;
+        document.getElementById("selected-info").textContent =
+            "선택된 건물: " + btn.textContent;
+    });
+});
+
+// ===== 세율 변경 =====
+document.getElementById("tax-rate").addEventListener("change", (e) => {
+    taxRate = parseInt(e.target.value);
+});
+
+// ===== 자원 계산 =====
+function calculateResources() {
+    population = 0;
+    food = 0;
+    power = 0;
+    let income = 0;
+    let upkeep = 0;
+    let taxBoost = 0;
+
+    mapData.forEach(type => {
+        if (!type) return;
+
+        const b = buildings[type];
+
+        if (b.capacity) population += b.capacity;
+        if (b.food) food += b.food;
+        if (b.power) power += b.power;
+        if (b.income) income += b.income;
+        if (b.upkeep) upkeep += b.upkeep;
+        if (b.happiness) happiness += b.happiness;
+        if (b.taxBoost) taxBoost += b.taxBoost;
+    });
+
+    let taxIncome = population * taxRate * (1 + taxBoost);
+
+    money += income + taxIncome - upkeep;
+
+    // 세율 높으면 행복도 감소
+    if (taxRate === 6) happiness -= 2;
+    if (taxRate === 1) happiness += 1;
+
+    // 자원 부족 패널티
+    if (food < population) happiness -= 3;
+    if (power < population) happiness -= 2;
+
+    // 최소/최대 제한
+    happiness = Math.max(0, Math.min(100, happiness));
+
+    updateStats();
 }
 
-function gameLoop() {
-    infectionStep();
-    draw();
+// ===== UI 업데이트 =====
+function updateStats() {
+    document.getElementById("population").textContent = population;
+    document.getElementById("money").textContent = Math.floor(money);
+    document.getElementById("happiness").textContent = happiness;
+    document.getElementById("food").textContent = food;
+    document.getElementById("power").textContent = power;
 }
 
-createCitizens(15);
-createInfected(1);
+// ===== 게임 루프 (10초마다 계산) =====
+setInterval(calculateResources, 10000);
 
-setInterval(gameLoop, 1000);
+// 시작
+createMap();
+updateStats();
 
