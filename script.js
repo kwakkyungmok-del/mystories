@@ -123,7 +123,6 @@ function calculateResources() {
 
     // ===== 모든 기본 변수 선언 =====
     let capacity = 0;
-    let population = 0;
     let food = 0;
     let power = 0;
     let income = 0;
@@ -168,6 +167,17 @@ function calculateResources() {
 
     realPopulation = Math.max(0, Math.min(capacity, realPopulation));
     population = realPopulation;
+    if (happiness >= 20) {
+    if (realPopulation < capacity) {
+        realPopulation += Math.ceil(capacity * 0.05);
+    }
+} else {
+    realPopulation -= Math.ceil(realPopulation * 0.1);
+}
+
+realPopulation = Math.max(0, Math.min(capacity, realPopulation));
+population = realPopulation; // 전역 population 업데이트
+
 
     // ===== 세금/수익 =====
     let taxIncome = population * taxRate * (1 + taxBoost);
