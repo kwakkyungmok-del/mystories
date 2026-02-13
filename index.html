@@ -2,23 +2,160 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>격리 도시 시뮬</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>텍스트 도시 시뮬레이터</title>
+
+    <style>
+        body {
+            background-color: #111;
+            color: #eee;
+            font-family: monospace;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            margin: 15px 0;
+        }
+
+        #top-bar {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .stat-box {
+            background: #222;
+            padding: 8px 15px;
+            border-radius: 6px;
+            border: 1px solid #444;
+        }
+
+        #tax-control {
+            margin: 10px;
+        }
+
+        select {
+            padding: 5px;
+            background: #222;
+            color: white;
+            border: 1px solid #555;
+        }
+
+        #game-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        #map {
+            display: grid;
+            grid-template-columns: repeat(10, 35px);
+            grid-template-rows: repeat(10, 35px);
+            gap: 2px;
+        }
+
+        .cell {
+            width: 35px;
+            height: 35px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            user-select: none;
+        }
+
+        .cell:hover {
+            background: #333;
+        }
+
+        #build-menu {
+            margin-top: 20px;
+            padding: 10px;
+            background: #181818;
+            border-top: 1px solid #444;
+        }
+
+        #build-menu button {
+            margin: 4px;
+            padding: 6px 10px;
+            background: #222;
+            color: white;
+            border: 1px solid #555;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        #build-menu button:hover {
+            background: #444;
+        }
+
+        #selected-info {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #aaa;
+        }
+    </style>
 </head>
 <body>
 
-    <h1>격리 도시 시뮬</h1>
+<h1>🏙 텍스트 도시 시뮬레이터</h1>
 
-    <div id="ui">
-        <p>시민 수: <span id="citizenCount">0</span></p>
-        <p>감염자 수: <span id="infectedCount">0</span></p>
-        <button onclick="deploySoldiers()">군 투입</button>
-        <button onclick="resetGame()">초기화</button>
+<!-- 상단 자원 표시 -->
+<div id="top-bar">
+    <div class="stat-box">👥 인구: <span id="population">0</span></div>
+    <div class="stat-box">💰 자금: <span id="money">0</span></div>
+    <div class="stat-box">😊 행복도: <span id="happiness">0</span></div>
+    <div class="stat-box">🌾 식량: <span id="food">0</span></div>
+    <div class="stat-box">⚡ 전력: <span id="power">0</span></div>
+</div>
+
+<!-- 세율 조정 -->
+<div id="tax-control">
+    세율 설정:
+    <select id="tax-rate">
+        <option value="1">낮음 (1)</option>
+        <option value="3" selected>보통 (3)</option>
+        <option value="6">높음 (6)</option>
+    </select>
+</div>
+
+<!-- 게임 맵 -->
+<div id="game-container">
+    <div id="map"></div>
+</div>
+
+<!-- 건설 메뉴 -->
+<div id="build-menu">
+    <div>건물 선택:</div>
+
+    <button data-building="house">🏠 주택</button>
+    <button data-building="apartment">🏢 아파트</button>
+    <button data-building="farm">🌾 농장</button>
+    <button data-building="shop">🏬 상점</button>
+    <button data-building="factory">🏭 공장</button>
+    <button data-building="powerplant">⚡ 발전소</button>
+    <button data-building="park">🌳 공원</button>
+    <button data-building="hospital">🏥 병원</button>
+    <button data-building="school">🏫 학교</button>
+    <button data-building="police">🚓 경찰서</button>
+    <button data-building="bank">🏦 은행</button>
+    <button data-building="cityhall">🏛 시청</button>
+    <button data-building="bulldoze">❌ 철거</button>
+
+    <div id="selected-info">
+        선택된 건물: 없음
     </div>
+</div>
 
-    <canvas id="gameCanvas" width="800" height="500"></canvas>
+<!-- 스크립트 연결 (반드시 body 맨 아래) -->
+<script src="script.js"></script>
 
-    <script src="script.js"></script>
 </body>
 </html>
-
