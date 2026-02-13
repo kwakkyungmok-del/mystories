@@ -178,17 +178,23 @@ const modal = document.getElementById("rule-modal");
 const closeModal = document.getElementById("close-modal");
 const openRules = document.getElementById("open-rules");
 
-// 시작 시 자동 표시
-window.onload = () => {
-    modal.style.display = "flex";
-};
+document.addEventListener("DOMContentLoaded", function () {
 
-// 닫기 버튼
-closeModal.onclick = () => {
-    modal.style.display = "none";
-};
+    const modal = document.getElementById("rule-modal");
+    const closeModal = document.getElementById("close-modal");
+    const openRules = document.getElementById("open-rules");
 
-// 규칙 보기 버튼
-openRules.onclick = () => {
+    // 시작 시 자동 표시
     modal.style.display = "flex";
-};
+
+    // 닫기 버튼
+    closeModal.addEventListener("click", function () {
+        modal.style.display = "none";
+    });
+
+    // 다시 열기
+    openRules.addEventListener("click", function () {
+        modal.style.display = "flex";
+    });
+
+});
