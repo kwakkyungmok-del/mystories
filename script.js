@@ -82,11 +82,35 @@ function handleCellClick(e) {
 // ===== 버튼 선택 =====
 document.querySelectorAll("#build-menu button").forEach(btn => {
     btn.addEventListener("click", () => {
+
         selectedBuilding = btn.dataset.building;
+
         document.getElementById("selected-info").textContent =
             "선택된 건물: " + btn.textContent;
+
+        if (selectedBuilding === "bulldoze") {
+            document.getElementById("building-info").innerHTML =
+                "철거: 기존 건물을 제거하고 일부 자금을 환급받습니다.";
+            return;
+        }
+
+        const b = buildings[selectedBuilding];
+        if (!b) return;
+
+        let info = `건설 비용: ${b.cost}<br>`;
+
+        if (b.capacity) info += `수용 인구: +${b.capacity}<br>`;
+        if (b.income) info += `수익: +${b.income} /주기<br>`;
+        if (b.food) info += `식량 생산: +${b.food}<br>`;
+        if (b.power) info += `전력 생산: +${b.power}<br>`;
+        if (b.happiness) info += `행복도 변화: ${b.happiness}<br>`;
+        if (b.upkeep) info += `유지비: -${b.upkeep} /주기<br>`;
+        if (b.taxBoost) info += `세금 효율 증가: +${b.taxBoost * 100}%<br>`;
+
+        document.getElementById("building-info").innerHTML = info;
     });
 });
+
 
 // ===== 세율 변경 =====
 document.getElementById("tax-rate").addEventListener("change", (e) => {
